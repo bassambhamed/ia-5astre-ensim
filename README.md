@@ -51,7 +51,7 @@ Cours de 5<sup>e</sup> année de l'**ENSIM** (Le Mans Université), parcours **A
 
 | Fil | Séances | Tâche | Données |
 |---|---|---|---|
-| **A. Capteur intelligent et maintenance prédictive** | S1 à S3 | Classer les pannes d'une machine ; estimer la durée de vie restante (RUL) | AI4I 2020 ; NASA C-MAPSS FD001 |
+| **A. Capteur intelligent et maintenance prédictive** | S1 à S3, puis le lab 4b | Classer les pannes d'une machine ; estimer la durée de vie restante (RUL) ; estimer l'usure de l'outil sans capteur (lab 4b) | AI4I 2020 ; NASA C-MAPSS FD001 |
 | **B. Assistant vocal pour la maison ou l'usine connectée** | S4 à S7 | Classer l'intention d'une commande en français. **La même tâche est reprise à chaque séance** : GRU, CamemBERT, LLM en zero-shot, puis LLM avec LoRA, RAG et agent | Amazon MASSIVE 1.1 fr-FR, partition officielle ; sous-ensemble `iot_*` pour les LLM |
 
 Un fil conducteur traverse aussi les séances 6 et 7 : la **fonction FreeRTOS fictive `xTaskBoostPriorityFromISR()`**. Elle n'existe pas (le lab 4 vérifie qu'elle est absente du noyau). Un LLM la décrit avec assurance en S6, et le RAG de la S7 répond qu'elle est absente de la documentation.
@@ -65,7 +65,7 @@ Un fil conducteur traverse aussi les séances 6 et 7 : la **fonction FreeRTOS fi
 | **S1** | mar. 24/11 · 9h30–10h45 | TD1 | Panorama : IA, ML, DL, IA générative, cycle de vie, MLOps | [PDF](slides/S1_panorama_ia.pdf) (41 p.) | [Lab 1][c1] |
 | **S2** | mer. 25/11 · 8h00–9h15 | P22 | Du neurone au perceptron multicouche | [PDF](slides/S2_neurone_mlp.pdf) (42 p.) | [Lab 2][c2] |
 | **S3** | mer. 25/11 · 9h30–10h45 | P22 | Apprendre : rétropropagation, optimiseurs, classification et régression | [PDF](slides/S3_retropropagation.pdf) (34 p.) | [Lab 3][c3] |
-| **S4** | mer. 25/11 · 11h00–12h15 | P22 | Séquences et texte : RNN, LSTM, GRU | [PDF](slides/S4_rnn_lstm_gru.pdf) (30 p.) | [Lab 4][c4] |
+| **S4** | mer. 25/11 · 11h00–12h15 | P22 | Séquences et texte : RNN, LSTM, GRU | [PDF](slides/S4_rnn_lstm_gru.pdf) (30 p.) | [Lab 4][c4] · [Lab 4b][c4b] |
 | **S5** | jeu. 26/11 · 8h00–9h15 | TD1 | Transformers et attention | [PDF](slides/S5_transformers.pdf) (40 p.) | [Lab 5][c5] |
 | **S6** | jeu. 26/11 · 13h45–15h00 | TD1 | LLM : fonctionnement et limites | [PDF](slides/S6_llm.pdf) (40 p.) | [Lab 6][c6] |
 | **S7** | ven. 27/11 · 13h45–15h00 | P20 | RAG, fine-tuning, agents et workflows agentiques, synthèse | [PDF](slides/S7_rag_agents.pdf) (44 p.) | [Lab 7a][c7a] · [Lab 7b][c7b] |
@@ -74,6 +74,7 @@ Un fil conducteur traverse aussi les séances 6 et 7 : la **fonction FreeRTOS fi
 [c2]: https://colab.research.google.com/github/bassambhamed/ia-5astre-ensim/blob/main/labs/Lab2_neurone_mlp.ipynb
 [c3]: https://colab.research.google.com/github/bassambhamed/ia-5astre-ensim/blob/main/labs/Lab3_retropropagation.ipynb
 [c4]: https://colab.research.google.com/github/bassambhamed/ia-5astre-ensim/blob/main/labs/Lab4_rnn_lstm_gru.ipynb
+[c4b]: https://colab.research.google.com/github/bassambhamed/ia-5astre-ensim/blob/main/labs/Lab4b_rnn_ai4i.ipynb
 [c5]: https://colab.research.google.com/github/bassambhamed/ia-5astre-ensim/blob/main/labs/Lab5_transformers.ipynb
 [c6]: https://colab.research.google.com/github/bassambhamed/ia-5astre-ensim/blob/main/labs/Lab6_llm.ipynb
 [c7a]: https://colab.research.google.com/github/bassambhamed/ia-5astre-ensim/blob/main/labs/Lab7a_rag_agents.ipynb
@@ -150,6 +151,8 @@ Les liens « Lab » ouvrent le notebook dans Google Colab (branche `main` du dé
 4. *Architectures et cas d'usage* : un même bloc récurrent, quatre façons de le brancher.
 
 **Lab 4** : intentions MASSIVE fr-FR avec RNN, LSTM et GRU ; gradient mesuré dans chaque cellule ; LSTM par caractères entraîné sur le noyau FreeRTOS, avec l'effet de la température d'échantillonnage.
+
+**Lab 4b** (CPU, environ 5 minutes), entièrement consacré à AI4I 2020 (fil A) : contexte de la maintenance prédictive et du jeu ; variables expliquées une à une, avec les règles des modes de panne ; analyse exploratoire, structure temporelle, découpage par outil ; détection des pannes comparée à un MLP et à une forêt aléatoire, puis interprétée (longueur de fenêtre, saillance, rappel par mode, importance par permutation) ; enfin, un capteur virtuel qui estime l'usure de l'outil sans capteur, et la cellule du LSTM recalculée à la main.
 </details>
 
 <details>
@@ -219,6 +222,8 @@ Exactitude sur les **220 commandes `iot_*` de la partition `test`** de MASSIVE f
 |---|---|
 | S4 | Sur les 2 974 phrases du `test` (60 intentions, moyenne de 3 graines) : RNN 72,0 %, LSTM 76,9 %, GRU 77,5 %. Gradient d'un réseau non entraîné sur 50 pas : 2,5·10⁻¹⁵ (RNN), 1,8·10⁻¹¹ (LSTM), 3,5·10⁻⁵ avec un biais de la porte d'oubli fixé à 1. |
 | S4 | LSTM par caractères sur FreeRTOS : la part d'identifiants générés qui existent dans le noyau passe de 92,3 % à la température 0,2 à 9,1 % à 1,4. |
+| S4, lab 4b | Pannes AI4I, découpage par outil (39 pannes de test), fenêtre de 10 cycles, moyenne de 3 graines : précision moyenne (AP) de 0,65 (RNN), 0,65 (LSTM) et 0,63 (GRU), contre 0,78 pour un MLP sur le seul cycle courant et 0,91 pour la forêt aléatoire. Sans passé (T = 1), le LSTM et le GRU remontent à 0,81 et 0,82 : les pannes AI4I dépendent du cycle courant. |
+| S4, lab 4b | Sans capteur d'usure, l'usure est reconstituée sur la vie de chaque outil avec une RMSE de 1,3 min (GRU), 1,7 min (LSTM) et 7,1 min (RNN), contre 64 min sans mémoire et 6,3 min pour un compteur de cycles. Avec l'usure estimée par le GRU, la forêt aléatoire retrouve une AP de 0,91 (0,73 sans usure). |
 | S5 | Sur le `test` : GRU 77,5 %, mini-Transformer (1,18 M de paramètres) 77,3 %, CamemBERT 86,7 %. |
 | S6 | Qwen3-1.7B en fp16 sur MPS : 25,7 tokens/s en génération. En zero-shot, 0,5 % de JSON invalide. Il décrit `xTaskBoostPriorityFromISR()` sans aucun doute et suit une injection de prompt même avec un prompt défensif. |
 | S7, RAG | Sur la question à propos de la fonction fictive, 5 tirages à T = 0,7 : sans RAG, 0 réponse sur 5 admet l'absence ; avec RAG, 2 ; avec RAG et garde-fou déterministe, 5. |
@@ -236,6 +241,7 @@ Chaque séance se termine par des ordres de grandeur pour le **STM32F446** (Cort
 |---|---|
 | MLP 7 → 64 → 32 → 1 (S3) | 2 625 paramètres, 2 528 MAC ; 10,5 ko en float32 (2,0 % de la Flash), 2,6 ko en int8. |
 | LSTM d = 16, h = 32, fenêtre de 30 pas (S4) | 6 400 paramètres, 6,4 ko en int8 ; 184 320 MAC ; 2,0 à 4,1 ms à 2 à 4 cycles par MAC (estimation, à mesurer sur cible). |
+| GRU d = 11, h = 32, détecteur de pannes AI4I (lab 4b) | 4 353 paramètres, 4,4 ko en int8 ; en flux, 4 160 MAC par nouveau cycle, soit 46 à 92 µs ; état de 128 octets. La forêt aléatoire de référence pèse 3,4 Mo. |
 | Mini-Transformer, GRU, CamemBERT (S5) | En int8, le mini-Transformer pèse 1,18 Mo (2,3 fois la Flash) ; CamemBERT 110,7 Mo ; Whisper tiny 39 Mo. Aucun ne tient. |
 | Qwen3-1.7B en int4 (S6) | 0,86 Go de poids, plus 0,94 Go de KV-cache à 8 192 tokens. Borne théorique d'un Raspberry Pi 5 : 19,8 tokens/s. Ne tient pas sur un microcontrôleur. |
 | Adaptateur LoRA de rang 8 sur q, k, v, o (S7) | 3 211 264 paramètres, 6,4 Mo en bf16, contre 3,4 Go pour le modèle : 536 fois moins à envoyer pour une mise à jour OTA. |
@@ -264,6 +270,7 @@ ia-5astre-ensim/
     ├── Lab2_neurone_mlp.ipynb
     ├── Lab3_retropropagation.ipynb
     ├── Lab4_rnn_lstm_gru.ipynb
+    ├── Lab4b_rnn_ai4i.ipynb
     ├── Lab5_transformers.ipynb
     ├── Lab6_llm.ipynb
     ├── Lab7a_rag_agents.ipynb
@@ -276,7 +283,7 @@ ia-5astre-ensim/
 
 ### Sur Google Colab
 
-Cliquez sur le lien « Lab » du [tableau du programme](#programme-et-supports). Un GPU T4 est recommandé pour les labs 4 à 7 (*Exécution → Modifier le type d'exécution*). Le code choisit seul le périphérique, dans l'ordre CUDA, MPS, CPU, et réduit la taille de l'expérience sur CPU. Un paquet absent s'installe automatiquement avec `%pip install -q`.
+Cliquez sur le lien « Lab » du [tableau du programme](#programme-et-supports). Un GPU T4 est recommandé pour les labs 4 à 7 (*Exécution → Modifier le type d'exécution*), sauf pour le lab 4b, qui tourne sur CPU. Le code choisit seul le périphérique, dans l'ordre CUDA, MPS, CPU, et réduit la taille de l'expérience sur CPU. Un paquet absent s'installe automatiquement avec `%pip install -q`.
 
 ### En local
 
@@ -297,6 +304,8 @@ Versions utilisées : PyTorch 2.10, Transformers 5.3, PEFT 0.22.
 5. **partie C**, « Exercices de validation » : chaque fonction à compléter renvoie `None`, et le vérificateur `verifier(nom, valeur, attendu, tol)` affiche « À compléter », « Correct » ou « Incorrect » ;
 6. corrigé, qui redéfinit les fonctions puis relance toute la vérification.
 
+Le lab 4b, entièrement consacré à AI4I, n'a pas de partie A : les exemples de la séance 4 sont recalculés dans le lab 4.
+
 Les notebooks s'exécutent de bout en bout sans erreur, même sans avoir complété les exercices. Chacun télécharge ses données et prévoit un repli si la source est indisponible.
 
 ### Durées mesurées (Mac M4 Pro)
@@ -305,6 +314,7 @@ Les notebooks s'exécutent de bout en bout sans erreur, même sans avoir complé
 |---|---|---|
 | 1 · 2 · 3 | de moins d'une minute à environ 2 minutes | CPU suffisant |
 | 4 | 6 min 30 s | |
+| 4b | 5 min | sur CPU : pour ces réseaux de quelques milliers de paramètres, le GPU MPS est plus lent |
 | 5 | 29 min | dont 22 min pour CamemBERT, avec une époque anormalement lente (environ 13 min sinon) |
 | 6 | 2 min | modèle déjà téléchargé (4 Go) |
 | 7a | 3 min 30 s | modèles déjà téléchargés |
@@ -316,7 +326,7 @@ Les notebooks s'exécutent de bout en bout sans erreur, même sans avoir complé
 
 | Usage | Ressource | Licence |
 |---|---|---|
-| S1, S3 : pannes | [AI4I 2020 Predictive Maintenance](https://archive.ics.uci.edu/dataset/601) (Matzka, 2020), UCI id 601, jeu synthétique | CC BY 4.0 |
+| S1, S3, lab 4b : pannes et usure | [AI4I 2020 Predictive Maintenance](https://archive.ics.uci.edu/dataset/601) (Matzka, 2020), UCI id 601, jeu synthétique | CC BY 4.0 |
 | S3 : durée de vie restante | NASA C-MAPSS FD001 (Saxena et Goebel, 2008), *NASA Prognostics Data Repository* | Données publiques de la NASA |
 | S4 à S7 : intentions et slots | Amazon MASSIVE 1.1, fr-FR (FitzGerald et al., 2022), partition officielle `train` / `dev` / `test` ; sous-ensemble `iot_*` (9 intentions, 220 commandes de test) en S6 et S7 | CC BY 4.0 |
 | S4 : génération de C | Sources du noyau FreeRTOS (`FreeRTOS-Kernel`) | MIT |
@@ -333,6 +343,7 @@ Les données et les modèles sont téléchargés par les labs et ne sont pas red
 ## Limites connues
 
 - Les labs ont été exécutés sur un Mac M4 Pro uniquement. **Aucun n'a été exécuté sur un GPU T4 de Colab** : les durées et la mémoire (notamment Qwen3-1.7B en float32 pour LoRA, avec *gradient checkpointing* pour tenir en 16 Go) y restent à mesurer.
+- Lab 4b : le test ne contient que 39 pannes (18 outils) ; une panne de plus ou de moins change le rappel de 2,6 points. La description officielle d'AI4I ne correspond pas exactement aux données (proportions des types L, M, H ; nombres de TWF et de RNF) : le lab s'appuie sur les données.
 - Les latences sur STM32F446 sont des **estimations** (2 à 4 cycles par MAC), pas des mesures sur cible.
 - Les comparaisons du fil rouge B portent sur 220 commandes et une exécution par méthode ; GRU et CamemBERT classent parmi 60 intentions, les LLM parmi 9.
 - Les durées du lab 5 varient avec la charge de la machine : le fine-tuning de CamemBERT a pris 571 s lors d'une exécution et 1 296 s lors de la suivante. Les slides donnent la dernière mesure.
